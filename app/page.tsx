@@ -7,7 +7,6 @@ import type { FormEvent } from "react";
 
 type ResearchResponse = {
   query: string;
-  summary: string;
   results: {
     title: string;
     url: string;
@@ -84,7 +83,7 @@ export default function Home() {
 
       // otherwise, setResults(date) updates the results state with the research results 
       // returned from the backend, which triggers a re-render of the page to display the results.
-      // Updating state makes React render the summary and results below.
+      // Updating state makes React render the results below.
       setResults(data);
     } catch (error) { // handles errors such as network failures or backend errors. The error is caught and displayed to the user.
       setError( // makes an error message to display to the user. If the error is an instance of Error, we use its message property. Otherwise, we use a generic error message.
@@ -103,8 +102,8 @@ export default function Home() {
         <p>A simple playground for exploring Parallel&apos;s APIs.</p>
       </header>
 
-      <form onSubmit={handleSubmit}> // this line connects the form to the function
-        // when we click the Search button, the form submits and React runs handleSubmit()
+      <form onSubmit={handleSubmit}> {/* // this line connects the form to the function */}
+        {/* // when we click the Search button, the form submits and React runs handleSubmit() */}
         <label htmlFor="query">Research query</label>
         <div className="search-row">
           <input
@@ -121,7 +120,7 @@ export default function Home() {
           />
           <button type="submit" disabled={loading}>
             {loading ? "Searching…" : "Search"}
-            // basically means if loading is true, show "Searching…", else show "Search"
+            {/* // basically means if loading is true, show "Searching…", else show "Search" */}
           </button>
         </div>
       </form>
@@ -141,9 +140,10 @@ export default function Home() {
             <>
               <div className="summary">
                 <p className="query">Results for “{results.query}”</p>
-                <h3>Summary</h3>
-                <p>{results.summary}</p>
               </div>
+              {results.results.length === 0 && (
+                <p className="placeholder">No results found. Try a different research query.</p>
+              )}
               <ul className="result-list">
                 {results.results.map((result) => (
                   <li key={result.url}>

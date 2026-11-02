@@ -145,7 +145,8 @@ export default function Home() {
                 <p className="placeholder">No results found. Try a different research query.</p>
               )}
               <ul className="result-list">
-                {results.results.map((result) => (
+                {results.results.map((result) => ( // .map creates a new item for each item in results array
+                // so if parallel returned 3 results, map would create 3 <li> items, one for each result
                   <li key={result.url}>
                     <h3><a href={result.url}>{result.title}</a></h3>
                     <p className="result-url">{result.url}</p>

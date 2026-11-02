@@ -60,6 +60,8 @@ export async function POST(request: Request) {
       }),
     });
 
+    // if is for when the request completes but something is wrong
+    // catch is for when the request fails to complete, such as a network failure or invalid JSON
     // fetch does not throw for HTTP errors, so check the status ourselves.
     // Return our own messages rather than forwarding Parallel's error body.
     if (!parallelResponse.ok) {
@@ -85,6 +87,7 @@ export async function POST(request: Request) {
 
     // Read Parallel's JSON text and parse it into a JavaScript value.
     parallelData = await parallelResponse.json();
+    // parallel response is the HTTP response object recieved from Parallel 
   } catch {
     // Network failures and unreadable JSON both produce a safe error message.
     return Response.json(
@@ -94,6 +97,7 @@ export async function POST(request: Request) {
   }
 
   // Check external data before using it, just as we check the incoming query.
+  // ensures response is a non-null object, contains a results property, and that property is an array
   if (
     typeof parallelData !== "object" ||
     parallelData === null ||
@@ -103,6 +107,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Parallel returned an invalid search response." }, { status: 502 });
   }
 
+  // creates an empty array
   const results = [];
 
   for (const result of parallelData.results) {
@@ -110,18 +115,18 @@ export async function POST(request: Request) {
       typeof result !== "object" ||
       result === null ||
       typeof result.url !== "string" ||
-      !/^https?:\/\//i.test(result.url) ||
-      (result.title != null && typeof result.title !== "string") ||
-      !Array.isArray(result.excerpts) ||
-      !result.excerpts.every((excerpt: unknown) => typeof excerpt === "string")
+      !/^https?:\/\//i.test(result.url) || // checks whether url is a string and starts with http:// or https://
+      (result.title != null && typeof result.title !== "string") || // checks whether title is either null or a string
+      !Array.isArray(result.excerpts) || // checks whether excerpts is an array
+      !result.excerpts.every((excerpt: unknown) => typeof excerpt === "string") // checks whether every item in the excerpts array is a string
     ) {
       return Response.json({ error: "Parallel returned an invalid search result." }, { status: 502 });
     }
 
     // Keep only the fields our page expects. Join excerpts into one snippet.
     // Parallel may omit a title, so use that result's URL as its link text.
-    results.push({
-      title: result.title ?? result.url,
+    results.push({ // .push adds a new item to the end of an array
+      title: result.title ?? result.url, // use left value unless its null otherwise use right
       url: result.url,
       snippet: result.excerpts.join(" "), // joins all the little excerpts
     });
@@ -129,7 +134,7 @@ export async function POST(request: Request) {
 
   // Response.json converts this object into a JSON response for the frontend.
   // The query comes from the request; research results come from Parallel Search.
-  return Response.json({
+  return Response.json({ // returning cleaned up query with newly built results array
     query,
     results,
   });
